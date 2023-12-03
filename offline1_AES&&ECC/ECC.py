@@ -16,11 +16,11 @@ Gy=1
 #this elliptic curve order #E
 
 E=19
-Ka= random.randrange(E)
+Ka= random.randrange(2,E)
 print(Ka)
 
 
-Kb=random.randrange(E)
+Kb=random.randrange(2,E)
 
 print(Kb)
 
@@ -50,6 +50,14 @@ for i in range (1,len(BitsOfKa)):
     if BitsOfKa[i]==1:
         s1=(Py-Gy)%P
         s2=pow((Px-Gx),-1,P)
+        s=(s1*s2)%P
+        tempx=(pow(s,2)-Px-Gx)%P
+        Py=(s*(Gx-tempx)-Gy)%P
+        Px=tempx
+
+
+print(Px)
+print(Py)
     
 
 
@@ -60,4 +68,4 @@ for i in range (1,len(BitsOfKa)):
 # p=input()
 # result=pow(int(y1),-1,int(p))
 
-print(result)
+# print(result)
