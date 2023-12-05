@@ -4,9 +4,9 @@ import random
 from BitVector import *
 
 from Crypto.Util import number
-
-import ECC
-import AES
+import importlib
+ECC=importlib.import_module("1905062_ECC")
+AES=importlib.import_module("1905062_AES")
 def main():
     # Create a socket object 
     s = socket.socket()         
@@ -45,11 +45,11 @@ def main():
    
     SecretB=ECC.PointMultiplication(Kb,Ax,Ay,P,a)
     key=str(SecretB[0])
-    print(key)
+    print("Shared Secret key:",key)
     AES.initKey(key)
     ciphertext=s.recv(1024).decode()
     Decipheredtext=AES.CBC_Decryption(ciphertext)
-    print(Decipheredtext)
+    print("Decipheredtext:" ,Decipheredtext)
 
     # close the connection 
     s.close() 

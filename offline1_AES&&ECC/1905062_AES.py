@@ -484,8 +484,8 @@ if __name__ == "__main__":
     
     # plaintext="Never Gonna Give you up"
     # key="BUET CSE19 Batch"
-    plaintext=input()
-    key=input()
+    plaintext=input("Enter Message:")
+    key=input("Enter key:")
    
 
 ################# Key Scheduling ################

@@ -5,6 +5,8 @@ from BitVector import *
 
 from Crypto.Util import number
 
+import time
+
 # Generate the shared parameters G, a, b, and P 
 
 
@@ -69,55 +71,46 @@ def generateCurve(Gx,Gy,P):
 
 if __name__ == "__main__":
 
-    #hardcoding these parameters
+    
+    keylen=[128,192,256]
 
     a=2
     b=2
     P=17
     Gx=4
     Gy=5
-
-    #this elliptic curve order #E
-
-    E=19
-    P=number.getPrime(128)
-    # print(P)
-    # #curve generation
-    Coefficient=generateCurve(Gx,Gy,P)
-    a=Coefficient[0]
-    b=Coefficient[1]
-    # print(b)
-    Ka= random.randrange(2,P-1)
-    # print(Ka)
-    Kb=random.randrange(2,P-1)
-    # print(Kb)
     
-
-    A=PointMultiplication(Ka,Gx,Gy,P,a)
-    B=PointMultiplication(Kb,Gx,Gy,P,a)
-
-    # print(A[0])
-    # print(A[1])
-
-    # print(B[0])
-    # print(B[1])
+    print("key length            time for A              time for B              time for Shared Secretekey")
     
-    ## secret key calculation
-    Gx=B[0]
-    Gy=B[1]
-    SecretA=PointMultiplication(Ka,Gx,Gy,P,a)
+    for i in range(len(keylen)):
+        AvgtimeA=0
+        AvgtimeB=0
+        AvgtimeShared=0
+        for j in range(0,5):
 
-    Gx=A[0]
-    Gy=A[1]
-    SecretB=PointMultiplication(Kb,Gx,Gy,P,a)
-    print(SecretA)
-    print(SecretB)
-    # print((Ka*B[0])%P)
-    #print((Kb*A[0])%P)
-
-# main()
-# y1=input()
-# p=input()
-# result=pow(int(y1),-1,int(p))
-
-# print(result)
+            P=number.getPrime(keylen[i])
+            Coefficient=generateCurve(Gx,Gy,P)
+            a=Coefficient[0]
+            b=Coefficient[1]
+            Ka= random.randrange(2,P-1)
+            Kb=random.randrange(2,P-1)
+            timeA=time.time()
+            A=PointMultiplication(Ka,Gx,Gy,P,a)
+            AvgtimeA+= time.time()-timeA
+            timeB=time.time()
+            B=PointMultiplication(Kb,Gx,Gy,P,a)
+            AvgtimeB+= time.time()-timeB
+            Gx=B[0]
+            Gy=B[1]
+            timeShared=time.time()
+            SecretA=PointMultiplication(Ka,Gx,Gy,P,a)
+            AvgtimeShared+=time.time()-timeShared
+            Gx=A[0]
+            Gy=A[1]
+            SecretB=PointMultiplication(Kb,Gx,Gy,P,a)
+            # print(SecretA)
+            # print(SecretB)
+        AvgtimeA=((AvgtimeA/5)*1000)
+        AvgtimeB=((AvgtimeB/5)*1000)
+        AvgtimeShared=((AvgtimeShared/5)*1000)
+        print(keylen[i],"                  %.2fms                   %.2fms                 %.2fms             " % (AvgtimeA , AvgtimeB  , AvgtimeShared))

@@ -1,6 +1,8 @@
 import socket
-import ECC
-import AES
+
+import importlib
+ECC=importlib.import_module("1905062_ECC")
+AES=importlib.import_module("1905062_AES")
 
 
 def server():
@@ -53,10 +55,10 @@ def server():
         SecretA=ECC.PointMultiplication(Ka,Bx,By,P,a)
         # Close the connection with the client 
         key=str(SecretA[0])
-        print(key)
+        print("Shared Secret key:",key)
 
         ############################## Encryption ################################
-        plaintext=input()
+        plaintext=input("Enter Message:")
         AES.initKey(key)
         CipherText=AES.CBC_Encryption(plaintext)
         # print(CipherText)
