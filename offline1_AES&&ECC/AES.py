@@ -454,9 +454,10 @@ def CBC_Decryption(Ciphertext):
 
 if __name__ == "__main__":
     
-    plaintext="Never Gonna Give you up"
-    key="BUET CSE19 Batch"
-    
+    # plaintext="Never Gonna Give you up"
+    # key="BUET CSE19 Batch"
+    plaintext=input()
+    key=input()
    
 
 ################# Key Scheduling ################
