@@ -44,7 +44,13 @@ def main():
     s.send(PrivateKey.encode()) 
    
     SecretB=ECC.PointMultiplication(Kb,Ax,Ay,P,a)
-    # print(SecretB)
+    key=str(SecretB[0])
+    print(key)
+    AES.initKey(key)
+    ciphertext=s.recv(1024).decode()
+    Decipheredtext=AES.CBC_Decryption(ciphertext)
+    print(Decipheredtext)
+
     # close the connection 
     s.close() 
     

@@ -17,6 +17,7 @@
 
 import sys
 import time
+import random
 from BitVector import *
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -163,10 +164,6 @@ def keyExpansion(key,roundConst):
             roundConst=const.get_bitvector_in_hex()
            
         
-        
-        
-    
-    0
 
 
 def Convert_to_2D_Array_of_Hex(hexstring):
@@ -221,14 +218,25 @@ def KeyPadding(key):
 
 
 def convertStringToHex(stringValue):
+   
     hexstring=""
     for i in range(0,len(stringValue)):
         hexstring+=format(ord(stringValue[i]), "x")
     return hexstring
 
 def convertHexToString(hexValue):
-    bytes_obj = bytes.fromhex(hexValue)
-    result_string = bytes_obj.decode('utf-8')
+    # print(hexValue)
+    # bytes_obj = bytes.fromhex(hexValue)
+    # result_string = bytes_obj.decode('utf-8')
+    i=0
+    result_string=""
+    while i<len(hexValue):
+        x=hexValue[i]+hexValue[i+1]
+        b = BitVector(hexstring=x)
+        int_val = b.intValue()
+        result_string+=chr(int_val)
+        # print(result_string)
+        i+=2
     return result_string
 
     
@@ -349,7 +357,8 @@ def AES_decryption(Cipher2DInHex):
     return Cipher2DInHex
 
 def SplitingInBlocks(plaintext):
-
+    
+    
     Blocks=[]
     
 
@@ -391,12 +400,13 @@ def CBC_Encryption(plaintext):
         splitTextIntoBlock[lastBlockIndex]=LastBlockPadding(splitTextIntoBlock[lastBlockIndex])
     
     else :  #dummy block for indicating no padding was needed
-        splitTextIntoBlock.append(BitVector(intVal=0,size=128).get_bitvector_in_hex())
+        splitTextIntoBlock.append(BitVector(intVal=0,size=KEY_LEN).get_bitvector_in_hex())
 
    
-    
-
-    InitializationVector=BitVector(intVal=0,size=128)
+   
+    InitializationVectorStored=BitVector(intVal=0)
+    InitializationVectorStored =InitializationVectorStored.gen_random_bits(KEY_LEN)
+    InitializationVector=InitializationVectorStored
     
    
     ################# AES ENCRYPTION IMPLEMENTATION ##################
@@ -414,14 +424,27 @@ def CBC_Encryption(plaintext):
         Ciphertext.append(CiphertextInHex)
         InitializationVector=BitVector(hexstring=Ciphertext[i])
     
+    Cipher=InitializationVectorStored.get_bitvector_in_hex()
     
-    return Ciphertext
+    
+    for i in range (len(Ciphertext)):
         
-def CBC_Decryption(Ciphertext):
+        Cipher+=Ciphertext[i]
     
+    return Cipher
+        
+def CBC_Decryption(Cipher):
     
-    InitializationVector=BitVector(intVal=0,size=128)
+  
+    InitializationVector=BitVector(hexstring=Cipher[0:32])
+    # print(InitializationVector)
+    # print(Cipher[0:17])
+    # print(Cipher)
+
+    Ciphertext=SplitingInBlocks(Cipher[32:])
     
+   
+  
     DecryptedCipherText=""
     
     for i in range(len(Ciphertext)):
@@ -451,7 +474,12 @@ def CBC_Decryption(Ciphertext):
     return convertHexToString(DecryptedCipherText)
 
 
-
+def PrintHex(hexvalue):
+    i=0
+    while i< len(hexvalue):
+        print(hexvalue[i]+hexvalue[i+1], end =" ")
+        i+=2
+    print()
 if __name__ == "__main__":
     
     # plaintext="Never Gonna Give you up"
@@ -480,9 +508,25 @@ if __name__ == "__main__":
     startTime=time.time()
     DecipheredText=CBC_Decryption(Ciphertext)
     decryptionTime=(time.time()-startTime)*1000
-    print(DecipheredText)
+    # print(DecipheredText)
 
-    print("Execution time details")
+    print("Key:")
+    print("In ASCII: ",key)
+    print("In HEX: ",end="")
+    PrintHex(convertStringToHex(key))
+    print("Plain Text:")
+    print("In ASCII: ",plaintext)
+    print("In HEX: ",end="")
+    PrintHex(convertStringToHex(plaintext))
+    print("Ciphered Text:")
+    print("In HEX: ",end="")
+    PrintHex(Ciphertext[32:])
+    print("In ASCII: ",convertHexToString(Ciphertext[32:]))
+    print("Deciphered Text:")
+    print("In HEX: ",end="")
+    PrintHex(convertStringToHex(DecipheredText))
+    print("In ASCII: ",DecipheredText)
+    print("Execution time details:")
     print("Key Schedule Time: ",keyScheduleTime," ms")
     print("Encryption Time: ",encryptionTime," ms")
     print("Decryption Time: ",decryptionTime," ms")

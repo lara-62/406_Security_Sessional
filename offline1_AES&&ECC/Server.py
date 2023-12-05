@@ -52,6 +52,16 @@ def server():
         # Gy=int(temp2)
         SecretA=ECC.PointMultiplication(Ka,Bx,By,P,a)
         # Close the connection with the client 
+        key=str(SecretA[0])
+        print(key)
+
+        ############################## Encryption ################################
+        plaintext=input()
+        AES.initKey(key)
+        CipherText=AES.CBC_Encryption(plaintext)
+        # print(CipherText)
+        c.send(CipherText.encode()) 
+
         c.close()
         
         # Breaking once connection closed
