@@ -16,6 +16,7 @@
 #Bit vector link https://engineering.purdue.edu/kak/dist/BitVector-3.4.8.html#42
 
 import sys
+import time
 from BitVector import *
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -196,9 +197,7 @@ def Convert_to_2D_Array_of_Hex(hexstring):
 
 
 def LastBlockPadding(Block):
-    print(Block)
     length=(32-len(Block))/2
-    print(length)
     for i in range (int(length)):            #convert to int otherwise segmentation fault because length was float type
         Block+=BitVector(intVal=int(length),size=8).get_bitvector_in_hex()
     
@@ -211,9 +210,12 @@ def KeyPadding(key):
     bitSize=4*len(key)
 
     if(bitSize != KEY_LEN):
-          while bitSize < KEY_LEN :
-               key+=format(ord(" "), "x")
-               bitSize+=8
+          if(bitSize > KEY_LEN):
+              return key[0:KEY_LEN]
+          else:
+            while bitSize < KEY_LEN :
+                key+=format(ord(" "), "x")
+                bitSize+=8
     return key
     
 
@@ -365,48 +367,37 @@ def SplitingInBlocks(plaintext):
 
 
 
-
-
-def main():
-    
-    plaintext="Never Gonna Give you up"
-    key="BUET CSE19 Batch"
-
+def initKey(key):
 
 ################# Key Scheduling ################
-
+   
     keyInHex=convertStringToHex(key)
     keyInHex=KeyPadding(keyInHex)
     Roundkeys.append(keyInHex)
     keyExpansion(keyInHex,roundConst)
-
-    # Msg2DInHex=Convert_to_2D_Array_of_Hex(plaintextInHex)
-    # print(Msg2DInHex)
     
-#--------------------------Encryption----------------------------------
 
-
+def CBC_Encryption(plaintext):
+   
 ############### CBC ENCRYPTION IMPLEMENTATION ##############
-
     plaintextInHex=convertStringToHex(plaintext)
-    print(plaintextInHex)
+
     splitTextIntoBlock=SplitingInBlocks(plaintextInHex)
     lastBlockIndex=len(splitTextIntoBlock)-1
-    print(lastBlockIndex)
+
     #CBC padding with number of bytes
     if len(splitTextIntoBlock[lastBlockIndex]) < 32 :
-        print("here2")
-        print(splitTextIntoBlock[lastBlockIndex])
+       
         splitTextIntoBlock[lastBlockIndex]=LastBlockPadding(splitTextIntoBlock[lastBlockIndex])
     
     else :  #dummy block for indicating no padding was needed
         splitTextIntoBlock.append(BitVector(intVal=0,size=128).get_bitvector_in_hex())
 
-    print(splitTextIntoBlock)
+   
     
 
     InitializationVector=BitVector(intVal=0,size=128)
-    print(InitializationVector)
+    
    
     ################# AES ENCRYPTION IMPLEMENTATION ##################
 
@@ -415,21 +406,20 @@ def main():
     for i in range(len(splitTextIntoBlock)):
         temp=(InitializationVector^(BitVector(hexstring=splitTextIntoBlock[i]))).get_bitvector_in_hex()
         Msg2DInHex=Convert_to_2D_Array_of_Hex(temp)
-        print(Msg2DInHex)
         Ciphertext2D=AES_encryption(Msg2DInHex)
         CiphertextInHex=""
         for j in range(matrixOrder):
             for k in range(matrixOrder):
                 CiphertextInHex+=Ciphertext2D[k][j]
         Ciphertext.append(CiphertextInHex)
-        print(Ciphertext[i])
         InitializationVector=BitVector(hexstring=Ciphertext[i])
     
-    print(Ciphertext)
+    
+    return Ciphertext
         
-
-#------------------------------Decryption--------------------------------
-
+def CBC_Decryption(Ciphertext):
+    
+    
     InitializationVector=BitVector(intVal=0,size=128)
     
     DecryptedCipherText=""
@@ -437,7 +427,7 @@ def main():
     for i in range(len(Ciphertext)):
         # temp=(InitializationVector^(BitVector(hexstring=splitTextIntoBlock[i]))).get_bitvector_in_hex()
         Ciphertext2D=Convert_to_2D_Array_of_Hex(Ciphertext[i])
-        print(Ciphertext2D)
+       
         Msg2DInHex=AES_decryption(Ciphertext2D)
         MsgInHex=""
         for j in range(matrixOrder):
@@ -455,12 +445,43 @@ def main():
     else:
         temp=DecryptedCipherText[-2:]
         DecryptedCipherText=DecryptedCipherText[0:len(DecryptedCipherText)-2*BitVector(hexstring=temp).intValue()]
-        print(temp)
     
-    print(DecryptedCipherText)
-    print(DecryptedCipherText[-2:])
-    print(convertHexToString(DecryptedCipherText)+".")
-         
+    
+   
+    return convertHexToString(DecryptedCipherText)
 
 
-main()
+
+if __name__ == "__main__":
+    
+    plaintext="Never Gonna Give you up"
+    key="BUET CSE19 Batch"
+    
+   
+
+################# Key Scheduling ################
+
+    startTime=time.time()
+    initKey(key)
+    keyScheduleTime=(time.time()-startTime)*1000
+   
+    
+#--------------------------Encryption----------------------------------
+
+
+############### CBC ENCRYPTION IMPLEMENTATION ##############
+    startTime=time.time()
+    Ciphertext=CBC_Encryption(plaintext)
+    encryptionTime=(time.time()-startTime)*1000
+    
+#------------------------------Decryption--------------------------------
+    
+    startTime=time.time()
+    DecipheredText=CBC_Decryption(Ciphertext)
+    decryptionTime=(time.time()-startTime)*1000
+    print(DecipheredText)
+
+    print("Execution time details")
+    print("Key Schedule Time: ",keyScheduleTime," ms")
+    print("Encryption Time: ",encryptionTime," ms")
+    print("Decryption Time: ",decryptionTime," ms")

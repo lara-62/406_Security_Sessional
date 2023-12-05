@@ -67,7 +67,7 @@ def generateCurve(Gx,Gy,P):
 
     
 
-def main():
+if __name__ == "__main__":
 
     #hardcoding these parameters
 
@@ -113,9 +113,9 @@ def main():
     print(SecretA)
     print(SecretB)
     # print((Ka*B[0])%P)
-    # print((Kb*A[0])%P)
+    #print((Kb*A[0])%P)
 
-main()
+# main()
 # y1=input()
 # p=input()
 # result=pow(int(y1),-1,int(p))
